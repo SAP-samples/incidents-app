@@ -6,10 +6,11 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@sap/cds": "^9",
-    "express": "^4",
     "@cap-js/hana": "^2",
-    "@sap/xssec": "^4"
+    "@sap/cds": "^9",
+    "@sap/cds-mtxs": "^3",
+    "@sap/xssec": "^4",
+    "express": "^4"
   },
   "engines": {
     "node": ">=20"
@@ -18,7 +19,7 @@
     "@cap-js/cds-test": "^0.4.0",
     "@cap-js/cds-types": "^0.13.0",
     "@cap-js/sqlite": "^2",
-    "@sap/cds-dk": ">=8"
+    "@sap/cds-dk": "latest"
   },
   "scripts": {
     "test": "npx jest tests/test.js",
@@ -46,12 +47,15 @@
       },
       "[production]": {
         "db": "hana",
-        "auth": "xsuaa"
+        "auth": "xsuaa",
+        "multitenancy": true
       },
-      "destinations": true,
+      "destinations": false,
       "html5-runtime": true,
-      "workzone": true
-    }
+      "workzone": false,
+      "html5-repo": true
+    },
+    "profile": "with-mtx-sidecar"
   },
   "sapux": [
     "app/incidents"
