@@ -1,0 +1,35 @@
+_schema-version: '1.0'
+repository: gopalanand230
+tag: latest
+before-all:
+  - npx cds build --production
+  - mkdir -p app/html5-deployer/resources
+  - npm i --prefix app/incidents
+  - npm run build --prefix app/incidents
+  # zip filename should match the archiveName specified in ui5-deploy.yaml
+  - cp -f app/incidents/dist/incidents.zip app/html5-deployer/resources/incidents.zip
+modules:
+  - name: incident-management-srv
+    build-parameters:
+      buildpack:
+        type: nodejs
+        builder: builder-jammy-base
+        path: gen/srv
+        env:
+          BP_NODE_RUN_SCRIPTS: ""
+  - name: incident-management-hana-deployer
+    build-parameters:
+      buildpack:
+        type: nodejs
+        builder: builder-jammy-base
+        path: gen/db
+        env:
+          BP_NODE_RUN_SCRIPTS: ""
+  - name: incident-management-html5-deployer
+    build-parameters:
+      buildpack:
+        type: nodejs
+        builder: builder-jammy-base
+        path: app/html5-deployer
+        env:
+          BP_NODE_RUN_SCRIPTS: ""
