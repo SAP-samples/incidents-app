@@ -90,25 +90,25 @@ modules:
           artifacts:
             - incidents.zip
           target-path: app/
-    parameters:
-      config:
-        HTML5Runtime_enabled: true
-        init_data:
-          instance:
-            existing_destinations_policy: update
-            destinations:
-              - Name: srv-api
-                URL: ~{srv-api/srv-url}
-                Authentication: NoAuthentication
-                Type: HTTP
-                ProxyType: Internet
-                HTML5.ForwardAuthToken: true
-                HTML5.DynamicDestination: true
-              - Name: ui5
-                URL: https://ui5.sap.com
-                Authentication: NoAuthentication
-                Type: HTTP
-                ProxyType: Internet
+    # parameters:
+    #   config:
+    #     HTML5Runtime_enabled: true
+    #     init_data:
+    #       instance:
+    #         existing_destinations_policy: update
+    #         destinations:
+    #           - Name: srv-api
+    #             URL: ~{srv-api/srv-url}
+    #             Authentication: NoAuthentication
+    #             Type: HTTP
+    #             ProxyType: Internet
+    #             HTML5.ForwardAuthToken: true
+    #             HTML5.DynamicDestination: true
+    #           - Name: ui5
+    #             URL: https://ui5.sap.com
+    #             Authentication: NoAuthentication
+    #             Type: HTTP
+    #             ProxyType: Internet
 
   - name: incidentmanagementincidents
     type: html5
@@ -125,10 +125,10 @@ modules:
   - name: incident-management-destinations
     type: com.sap.application.content
     requires:
-      - name: incident-management-auth
-        parameters:
-          service-key:
-            name: incident-management-auth-key
+      # - name: incident-management-auth
+      #   parameters:
+      #     service-key:
+      #       name: incident-management-auth-key
       - name: incident-management-html5-repo-host
         parameters:
           service-key:
@@ -148,11 +148,11 @@ modules:
               ServiceInstanceName: incident-management-html5-repo-host
               ServiceKeyName: incident-management-html5-repo-host-key
               sap.cloud.service: incidentmanagement.service
-            - Name: incident-management-auth
-              Authentication: OAuth2UserTokenExchange
-              ServiceInstanceName: incident-management-auth
-              ServiceKeyName: incident-management-auth-key
-              sap.cloud.service: incidentmanagement.service
+            # - Name: incident-management-auth
+            #   Authentication: OAuth2UserTokenExchange
+            #   ServiceInstanceName: incident-management-auth
+            #   ServiceKeyName: incident-management-auth-key
+            #   sap.cloud.service: incidentmanagement.service
 
 resources:
   - name: incident-management-auth
@@ -162,13 +162,16 @@ resources:
       service-name: incident-management-auth
       service-plan: application
       config:
-        display-name: incident-management
+        display-name: incident-management-im-base
         oauth2-configuration:
           token-policy:
             access-token-format: "jwt"
         authorization:
           enabled: true
         xsuaa-cross-consumption: true
+        provided-apis: 
+        - name: incident-management-api
+          description: api exposed by incident mgmt app
   - name: incident-management-db
     type: com.sap.xs.hdi-container
     parameters:
@@ -192,6 +195,7 @@ resources:
                 ProxyType: Internet
                 HTML5.ForwardAuthToken: true
                 HTML5.DynamicDestination: true
+                HTML5.IASDependencyName: 'incident-management-api'
     requires:
       - name: srv-api
         group: destinations
