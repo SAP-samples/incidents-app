@@ -18,16 +18,46 @@ modules:
     parameters:
       instances: 1
       buildpack: nodejs_buildpack
+      routes:
+        - route: "${default-url}"
+        - route: "${default-host}.cert.${default-domain}"
     build-parameters:
       builder: npm-ci
     provides:
       - name: srv-api # required by consumers of CAP services (e.g. approuter)
         properties:
           srv-url: ${default-url}
+          srv-cert-url: '${protocol}://${default-host}.cert.${default-domain}'
     requires:
       - name: incident-management-auth
+        parameters:
+          config:
+            credential-type: X509_GENERATED
+            app-identifier: srv
       - name: incident-management-db
       - name: incident-management-destination
+    deployed-after:
+      - incident-management-ams-policies-deployer
+    properties:
+      AMS_DCL_ROOT: ams/dcl
+
+  - name: incident-management-ams-policies-deployer
+    type: javascript.nodejs
+    path: gen/policies
+    parameters:
+      buildpack: nodejs_buildpack
+      no-route: true
+      no-start: true
+      tasks:
+        - name: deploy-dcl
+          command: npm start
+          memory: 512M
+    requires:
+      - name: incident-management-auth
+        parameters:
+          config:
+            credential-type: X509_GENERATED
+            app-identifier: ams-policy-deployer
 
   - name: incident-management-db-deployer
     type: hdb
@@ -42,12 +72,17 @@ modules:
     path: gen
     requires:
       - name: incident-management-auth
+        parameters:
+          config:
+            credential-type: X509_GENERATED
+            app-identifier: app-deployer
       - name: srv-api
       - name: incident-management-html5-repo-host
         parameters:
           content-target: true
           config:
             HTML5Runtime_enabled: true
+            IASDependencyName: incident-management-api
     build-parameters:
       build-result: app/
       requires:
@@ -123,21 +158,17 @@ resources:
   - name: incident-management-auth
     type: org.cloudfoundry.managed-service
     parameters:
-      service: xsuaa
+      service: identity
+      service-name: incident-management-auth
       service-plan: application
-      path: ./xs-security.json
       config:
-        xsappname: incident-management-${org}-${space}
-        tenant-mode: dedicated
-        role-collections:
-          - name: 'support (incident-management ${org}-${space})'
-            description: 'generated'
-            role-template-references:
-              - '$XSAPPNAME.support'
-          - name: 'admin (incident-management ${org}-${space})'
-            description: 'generated'
-            role-template-references:
-              - '$XSAPPNAME.admin'
+        display-name: incident-management
+        oauth2-configuration:
+          token-policy:
+            access-token-format: "jwt"
+        authorization:
+          enabled: true
+        xsuaa-cross-consumption: true
   - name: incident-management-db
     type: com.sap.xs.hdi-container
     parameters:
