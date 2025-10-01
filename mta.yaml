@@ -1,183 +1,185 @@
 _schema-version: 3.3.0
-ID: incident-management
-description: A simple CAP project.
+ID: incident-feedback-service
 version: 1.0.0
-modules:
-  - name: incident-management-srv
-    type: nodejs
-    path: gen/srv
-    properties:
-      SAP_CALM_FESR_LOG_LEVEL: debug
-      SAP_CALM_DCI_LOG_LEVEL: debug
-      SAP_CALM_SERVICE_NAME: incident-management-srv
-      SAP_CALM_SERVICE_TYPE: SAP_CP_CF
-      OTEL_RESOURCE_ATTRIBUTES: sap.tenancy.tenant_id=52fbaf37-c604-4abf-8580-c97703835dc8
-      NODE_ARGS: -r @sap/xotel-agent-ext-js/dist/common/tracer
-      FEEDBACK_SERVICE_URL: https://xp265-shared-xp265-incident-feedback-service-srv.cfapps.eu10-004.hana.ondemand.com
-    requires:
-      - name: incident-management-db
-      - name: uaa_incident-management
-      - name: incident-management-destination-service
-      - name: incident-management-connectivity
-      - name: xp265-auto
-        parameters:
-          config:
-            instance_min_count: 2
-            instance_max_count: 5
-            scaling_rules:
-              - metric_type: throughput
-                breach_duration_secs: 60
-                threshold: 40
-                operator: ">="
-                adjustment: "+2"
-              - metric_type: throughput
-                breach_duration_secs: 300
-                threshold: 10
-                operator: ">="
-                adjustment: "-2"
-      - name: cls-logging-drain
-    provides:
-      - name: srv-api
-        properties:
-          srv-url: ${default-url}
-    parameters:
-      instances: 2
-      buildpack: nodejs_buildpack
-      readiness-health-check-http-endpoint: /health
-      readiness-health-check-type: http
-    build-parameters:
-      builder: npm
-  - name: incident-management-db-deployer
-    type: hdb
-    path: gen/db
-    requires:
-      - name: incident-management-db
-    parameters:
-      buildpack: nodejs_buildpack
-  - name: incident-management-destination-content
-    type: com.sap.application.content
-    requires:
-      - name: incident-management-destination-service
-        parameters:
-          content-target: true
-      - name: incident-management_html_repo_host
-        parameters:
-          service-key:
-            name: incident-management_html_repo_host-key
-      - name: uaa_incident-management
-        parameters:
-          service-key:
-            name: uaa_incident-management-key
-    parameters:
-      content:
-        instance:
-          destinations:
-            - Name: incidents_incident_management_html_repo_host
-              ServiceInstanceName: incident-management-html5-app-host-service
-              ServiceKeyName: incident-management_html_repo_host-key
-              sap.cloud.service: incidents
-            - Authentication: OAuth2UserTokenExchange
-              Name: incidents_uaa_incident_management
-              ServiceInstanceName: incident-management-xsuaa-service
-              ServiceKeyName: uaa_incident-management-key
-              sap.cloud.service: incidents
-          existing_destinations_policy: ignore
-    build-parameters:
-      no-source: true
-  - name: incident-management-app-content
-    type: com.sap.application.content
-    path: .
-    requires:
-      - name: incident-management_html_repo_host
-        parameters:
-          content-target: true
-    build-parameters:
-      build-result: resources
-      requires:
-        - artifacts:
-            - ukrs01incidents.zip
-          name: ukrs01incidents
-          target-path: resources/
-  - name: ukrs01incidents
-    type: html5
-    path: app/incidents
-    build-parameters:
-      build-result: dist
-      builder: custom
-      commands:
-        - npm install
-        - npm run build:cf
-      supported-platforms:
-        []
-resources:
-  - name: incident-management-db
-    type: com.sap.xs.hdi-container
-    parameters:
-      service: hana
-      service-plan: hdi-shared
-  - name: incident-management-destination-service
-    type: org.cloudfoundry.managed-service
-    parameters:
-      config:
-        HTML5Runtime_enabled: true
-        init_data:
-          instance:
-            destinations:
-              - Authentication: NoAuthentication
-                Name: ui5
-                ProxyType: Internet
-                Type: HTTP
-                URL: https://ui5.sap.com
-              - Authentication: NoAuthentication
-                HTML5.DynamicDestination: true
-                HTML5.ForwardAuthToken: true
-                Name: incident-management-srv-api
-                ProxyType: Internet
-                Type: HTTP
-                URL: ~{srv-api/srv-url}
-            existing_destinations_policy: update
-        version: 1.0.0
-      service: destination
-      service-name: incident-management-destination-service
-      service-plan: lite
-    requires:
-      - name: srv-api
-  - name: incident-management_html_repo_host
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: html5-apps-repo
-      service-name: incident-management-html5-app-host-service
-      service-plan: app-host
-  - name: uaa_incident-management
-    type: org.cloudfoundry.managed-service
-    parameters:
-      path: ./xs-security.json
-      service: xsuaa
-      service-name: incident-management-xsuaa-service
-      service-plan: application
-      config:
-        xsappname: incident-management-${org}-${space}
-        tenant-mode: dedicated
-  # Cloud Logging instance      
-  - name: cls-logging-drain
-    type: org.cloudfoundry.existing-service
-    parameters:
-      service-tags: ["cloud-logging", "Cloud Logging"]
-  # Auto Scaler instance
-  - name: xp265-auto
-    type: org.cloudfoundry.existing-service
-  # Connectivity instance
-  - name: incident-management-connectivity
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: connectivity
-      service-plan: lite
+description: "CAP microservice for incident feedback and ratings"
 parameters:
-  deploy_mode: html5-repo
   enable-parallel-deployments: true
+  deploy_mode: html5-repo
 build-parameters:
   before-all:
     - builder: custom
       commands:
         - npm ci
         - npx cds build --production
+modules:
+  - name: incident-feedback-service-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+    properties:
+      SAP_CALM_FESR_LOG_LEVEL: debug
+      SAP_CALM_DCI_LOG_LEVEL: debug
+      SAP_CALM_SERVICE_NAME: incident-feedback-srv
+      SAP_CALM_SERVICE_TYPE: SAP_CP_CF
+      OTEL_RESOURCE_ATTRIBUTES: sap.tenancy.tenant_id=52fbaf37-c604-4abf-8580-c97703835dc8
+      NODE_ARGS: -r @sap/xotel-agent-ext-js/dist/common/tracer
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: incident-feedback-service-db
+      - name: incident-management-xsuaa-service
+      # - name: xp265-cl
+      - name: cls-logging-drain
+      - name: xp265-auto
+      - name: incident-feedback-service-destination
+
+  - name: incident-feedback-service-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: incident-feedback-service-db
+
+  - name: incident-feedback-service-app-deployer
+    type: com.sap.application.content
+    path: gen
+    requires:
+      - name: incident-management-xsuaa-service
+      - name: srv-api
+      - name: incident-feedback-service-html5-repo-host
+        parameters:
+          content-target: true
+          config:
+            HTML5Runtime_enabled: true
+    build-parameters:
+      build-result: app/
+      requires:
+        - name: incidentfeedbackservicefeedback
+          artifacts:
+            - feedback.zip
+          target-path: app/
+    parameters:
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            existing_destinations_policy: update
+            destinations:
+              - Name: srv-api
+                URL: ~{srv-api/srv-url}
+                Authentication: NoAuthentication
+                Type: HTTP
+                ProxyType: Internet
+                HTML5.ForwardAuthToken: true
+                HTML5.DynamicDestination: true
+              - Name: ui5
+                URL: https://ui5.sap.com
+                Authentication: NoAuthentication
+                Type: HTTP
+                ProxyType: Internet
+
+  - name: incidentfeedbackservicefeedback
+    type: html5
+    path: app/feedback
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm ci
+        - npm run build
+      supported-platforms:
+        []
+
+  - name: incident-feedback-service-destinations
+    type: com.sap.application.content
+    requires:
+      - name: incident-management-xsuaa-service
+        parameters:
+          service-key:
+            name: incident-management-xsuaa-service-key
+      - name: incident-feedback-service-html5-repo-host
+        parameters:
+          service-key:
+            name: incident-feedback-service-html5-repo-host-key
+      - name: srv-api
+      - name: incident-feedback-service-destination
+        parameters:
+          content-target: true
+    build-parameters:
+      no-source: true
+    parameters:
+      content:
+        instance:
+          existing_destinations_policy: update
+          destinations:
+            - Name: incident-feedback-service-html5-repository
+              ServiceInstanceName: incident-feedback-service-html5-repo-host
+              ServiceKeyName: incident-feedback-service-html5-repo-host-key
+              sap.cloud.service: incidentfeedbackservice.service
+            - Name: incident-management-xsuaa-service
+              Authentication: OAuth2UserTokenExchange
+              ServiceInstanceName: incident-management-xsuaa-service
+              ServiceKeyName: incident-management-xsuaa-service-key
+              sap.cloud.service: incidentfeedbackservice.service
+
+resources:
+  - name: incident-feedback-service-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: incident-management-xsuaa-service
+    type: org.cloudfoundry.existing-service
+  # Cloud Logging instance      
+  - name: xp265-cl
+    type: org.cloudfoundry.existing-service
+  # Auto Scaler instance
+  - name: xp265-auto
+    type: org.cloudfoundry.existing-service
+  - name: incident-feedback-service-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            existing_destinations_policy: update
+            destinations:
+              - Name: srv-api
+                URL: ~{srv-api/srv-url}
+                Authentication: NoAuthentication
+                Type: HTTP
+                ProxyType: Internet
+                HTML5.ForwardAuthToken: true
+                HTML5.DynamicDestination: true
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api # must be used in xs-app.json as well
+          url: ~{srv-url}
+          forwardAuthToken: true
+
+  - name: incident-feedback-service-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+  - name: incident-feedback-service-html5-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
+  - name: cls-logging-drain
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-tags: ["cloud-logging", "Cloud Logging"]

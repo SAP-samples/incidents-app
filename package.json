@@ -1,7 +1,7 @@
 {
-  "name": "incident-management",
+  "name": "incident-feedback-service",
   "version": "1.0.0",
-  "description": "A simple CAP project.",
+  "description": "CAP microservice for incident feedback and ratings",
   "repository": "<Add your repository here>",
   "license": "UNLICENSED",
   "private": true,
@@ -33,40 +33,39 @@
   },
   "devDependencies": {
     "@cap-js/sqlite": "latest",
-    "@sap/cds-dk": "^9.3.2",
-    "@sap/ux-specification": "latest",
-    "rimraf": "^5.0.5"
+    "@sap/cds-dk": "latest",
+    "cds-plugin-ui5": "latest"
   },
   "scripts": {
-    "start": "node ${NODE_ARGS} ./node_modules/@sap/cds/bin/serve",
-    "watch-incidents": "cds watch --open incidents/webapp/index.html?sap-ui-xx-viewCache=false",
-    "undeploy": "cf undeploy incident-management --delete-services --delete-service-keys --delete-service-brokers",
-    "build": "rimraf resources mta_archives && mbt build --mtar archive",
-    "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "watch-feedback": "cds watch --open com.sap.feedback/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "build": "cds build --production"
   },
   "sapux": [
-    "app/incidents",
-    "app/incidents"
+    "app/feedback",
+    "app/feedback"
   ],
   "cds": {
     "requires": {
+      "db": {
+        "kind": "sqlite",
+        "[production]": {
+          "kind": "hana"
+        }
+      },
       "[production]": {
-        "db": "hana",
+        "db": {
+          "kind": "hana"
+        },
         "auth": "xsuaa",
         "telemetry": {
           "kind": "to-cloud-logging"
         }
       },
-      "OP_API_BUSINESS_PARTNER_SRV": {
-        "kind": "odata-v2",
-        "model": "srv/external/OP_API_BUSINESS_PARTNER_SRV",
-        "[production]": {
-          "credentials": {
-            "destination": "incidents-api-access",
-            "path": "/sap/opu/odata/sap/API_BUSINESS_PARTNER"
-          }
-        }
-      }
+      "destinations": true,
+      "html5-repo": true,
+      "workzone": true
     }
   }
 }

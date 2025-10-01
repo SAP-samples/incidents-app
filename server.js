@@ -28,4 +28,4 @@ cds.serve('all').in(app)
 app.listen()
 cds.on("bootstrap", (app) => fesr.registerFesrEndpoint(app));
 
- module.exports = cds.server
+module.exports = cds.server
