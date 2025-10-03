@@ -1,4 +1,5 @@
-require('@sap/xotel-agent-ext-js/dist/common/tracer');
+const cds = require('@sap/cds');
+const tracer = require("@sap/xotel-agent-ext-js");
 const app = require('express')()
 const fesr = require("@sap/fesr-to-otel-js");
 // Initialization of Exception Monitoring:
@@ -24,8 +25,10 @@ cflog.addOutputPlugin(otelOutputPlugin)
 cfLoggerProvider.addLogRecordProcessor(calmExtAutoConf.createEXMLogRecordProcessor());
 cfLoggerProvider.addLogRecordProcessor(new sdklogs.BatchLogRecordProcessor(new otellog.AutoCloudLoggingLogsExporter()))
 
-cds.serve('all').in(app)
-app.listen()
-cds.on("bootstrap", (app) => fesr.registerFesrEndpoint(app));
+cds.on("bootstrap", (expressApp) => fesr.registerFesrEndpoint(expressApp));
+
+cds.serve('all').in(app).then(() => {
+    app.listen()
+})
 
 module.exports = cds.server
