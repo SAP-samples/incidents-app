@@ -56,7 +56,10 @@
         },
         "auth": "xsuaa",
         "telemetry": {
-          "kind": "to-cloud-logging"
+          "kind": "to-cloud-logging",
+          "tracing": {
+            "_wrap_hana": true
+          }
         }
       },
       "destinations": true,
