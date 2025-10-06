@@ -8,7 +8,7 @@
   "dependencies": {
     "@sap/cds": "^9.3.1",
     "@cap-js/hana": "^2.2.0",
-    "@sap/hana-client": "^2.26.18",
+    "hdb": "^2.26.1",
     "@cap-js/telemetry": "^1.5.3",
     "@grpc/grpc-js": "^1.14.0",
     "@opentelemetry/api": "1.9.0",
