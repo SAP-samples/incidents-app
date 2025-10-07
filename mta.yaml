@@ -19,7 +19,6 @@ modules:
       instances: 1
       buildpack: nodejs_buildpack
     properties:
-      SAP_CALM_INSTRUMENTATION_ENABLED: false
       SAP_CALM_FESR_LOG_LEVEL: debug
       SAP_CALM_DCI_LOG_LEVEL: debug
       SAP_CALM_SERVICE_NAME: incident-feedback-srv
