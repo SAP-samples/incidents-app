@@ -37,7 +37,7 @@
     "cds-plugin-ui5": "^0.13.6"
   },
   "scripts": {
-    "start": "node ${NODE_ARGS} ./node_modules/@sap/cds/bin/serve",
+    "start": "node ${NODE_ARGS} ./node_modules/.bin/cds-serve",
     "watch": "cds watch",
     "watch-feedback": "cds watch --open com.sap.feedback/index.html?sap-ui-xx-viewCache=false --livereload false",
     "build": "cds build --production"
