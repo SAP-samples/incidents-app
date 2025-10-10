@@ -1,0 +1,217 @@
+@server=https://sap-hana-cloud-hcd-us10-mr-dr-testing-test-dr-incidents-srv.cfapps.eu12.hana.ondemand.com
+@username=alice
+@token=<<token>>
+
+
+
+### Incidents
+# @name Incidents_GET
+GET {{server}}/odata/v4/processor/Incidents
+Authorization: Bearer {{token}}
+
+### Incidents Draft POST
+# @name Incidents_Draft_POST
+POST {{server}}/odata/v4/processor/Incidents
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "customer": {
+    "ID": "Customers-6755972"
+  },
+  "title": "title-29689705",
+  "urgency": {
+    "code": "M"
+  },
+  "status": {
+    "code": "R"
+  },
+  "conversation": [
+    {
+      "ID": "28835911-7c85-4f03-9d08-534376acf469",
+      "timestamp": "2022-03-16T18:30:00.000Z",
+      "author": "author.h61xj@example.com",
+      "message": "message-28835911"
+    },
+    {
+      "ID": "28835912-18dd-4adc-8e7d-01c1212d1aee",
+      "timestamp": "2010-04-28T18:30:00.000Z",
+      "author": "author.h61xk@example.com",
+      "message": "message-28835912"
+    }
+  ],
+  "createdAt": "2004-05-09T18:30:00.000Z",
+  "createdBy": "createdBy.hocq1@example.com",
+  "modifiedAt": "2003-02-25T18:30:00.000Z",
+  "modifiedBy": "modifiedBy.hocq1@example.net"
+}
+
+
+### Result from POST request above
+@draftID={{Incidents_Draft_POST.response.body.$.ID}}
+
+
+### Incidents Draft PATCH
+# @name Incidents_Draft_Patch
+PATCH {{server}}/odata/v4/processor/Incidents(ID={{draftID}},IsActiveEntity=false)
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "customer": {
+    "ID": "Customers-6755972"
+  },
+  "title": "title-29689705",
+  "urgency": {
+    "code": "M"
+  },
+  "status": {
+    "code": "R"
+  },
+  "conversation": [
+    {
+      "ID": "28835911-7c85-4f03-9d08-534376acf469",
+      "timestamp": "2022-03-16T18:30:00.000Z",
+      "author": "author.h61xj@example.com",
+      "message": "message-28835911"
+    },
+    {
+      "ID": "28835912-18dd-4adc-8e7d-01c1212d1aee",
+      "timestamp": "2010-04-28T18:30:00.000Z",
+      "author": "author.h61xk@example.com",
+      "message": "message-28835912"
+    }
+  ],
+  "createdAt": "2004-05-09T18:30:00.000Z",
+  "createdBy": "createdBy.hocq1@example.com",
+  "modifiedAt": "2003-02-25T18:30:00.000Z",
+  "modifiedBy": "modifiedBy.hocq1@example.net"
+}
+
+
+### Incidents Draft Prepare
+# @name Incidents_Draft_Prepare
+POST {{server}}/odata/v4/processor/Incidents(ID={{draftID}},IsActiveEntity=false)/ProcessorService.draftPrepare
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{}
+
+
+### Incidents Draft Activate
+# @name Incidents_Draft_Activate
+POST {{server}}/odata/v4/processor/Incidents(ID={{draftID}},IsActiveEntity=false)/ProcessorService.draftActivate
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{}
+
+
+### --- Advanced Entity Operations --- ###
+
+### Customers
+# @name Customers_GET
+GET {{server}}/odata/v4/processor/Customers
+Authorization: Bearer {{token}}
+
+
+### Urgency
+# @name Urgency_GET
+GET {{server}}/odata/v4/processor/Urgency
+Authorization: Bearer {{token}}
+
+
+### Status
+# @name Status_GET
+GET {{server}}/odata/v4/processor/Status
+Authorization: Bearer {{token}}
+
+
+### Incidents.conversation
+# @name Incidentsconversation_GET
+GET {{server}}/odata/v4/processor/Incidents.conversation
+Authorization: Bearer {{token}}
+
+
+### Incidents.conversation
+# @name Incidentsconversation_POST
+POST {{server}}/odata/v4/processor/Incidents.conversation
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "ID": "28835911-7c85-4f03-9d08-534376acf469",
+  "timestamp": "2022-03-16T18:30:00.000Z",
+  "author": "author.h61xj@example.com",
+  "message": "message-28835911"
+}
+
+
+### Incidents.conversation
+# @name Incidentsconversation_PATCH
+PATCH {{server}}/odata/v4/processor/Incidents.conversation(up_=[object Object],ID=28835911-7c85-4f03-9d08-534376acf469)
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "ID": "28835911-7c85-4f03-9d08-534376acf469",
+  "timestamp": "2022-03-16T18:30:00.000Z",
+  "author": "author.h61xj@example.com",
+  "message": "message-28835911"
+}
+
+
+### Incidents.conversation
+# @name Incidentsconversation_DELETE
+DELETE {{server}}/odata/v4/processor/Incidents.conversation(up_=[object Object],ID=28835911-7c85-4f03-9d08-534376acf469)
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### Addresses
+# @name Addresses_GET
+GET {{server}}/odata/v4/processor/Addresses
+Authorization: Bearer {{token}}
+
+
+### Addresses
+# @name Addresses_POST
+POST {{server}}/odata/v4/processor/Addresses
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "ID": "25544978-01f9-44eb-9d00-064293d98db1",
+  "city": "city-25544978",
+  "postCode": "postCode-25544978",
+  "streetAddress": "streetAddress-25544978",
+  "createdAt": "2002-10-26T18:30:00.000Z",
+  "createdBy": "createdBy.f7imq@example.net",
+  "modifiedAt": "2008-03-07T18:30:00.000Z",
+  "modifiedBy": "modifiedBy.f7imq@example.org"
+}
+
+
+### Addresses
+# @name Addresses_PATCH
+PATCH {{server}}/odata/v4/processor/Addresses/25544978-01f9-44eb-9d00-064293d98db1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "ID": "25544978-01f9-44eb-9d00-064293d98db1",
+  "city": "city-25544978",
+  "postCode": "postCode-25544978",
+  "streetAddress": "streetAddress-25544978",
+  "createdAt": "2002-10-26T18:30:00.000Z",
+  "createdBy": "createdBy.f7imq@example.net",
+  "modifiedAt": "2008-03-07T18:30:00.000Z",
+  "modifiedBy": "modifiedBy.f7imq@example.org"
+}
+
+
+### Addresses
+# @name Addresses_DELETE
+DELETE {{server}}/odata/v4/processor/Addresses/25544978-01f9-44eb-9d00-064293d98db1
+Content-Type: application/json
+Authorization: Bearer {{token}}

@@ -1,0 +1,180 @@
+_schema-version: 3.3.0
+ID: capire.incidents
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+  deploy_mode: html5-repo
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+modules:
+  - name: incidents-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: incidents-auth
+      - name: incidents-db
+      - name: incidents-destination
+
+  # - name: incidents-db-deployer
+  #   type: hdb
+  #   path: gen/db
+  #   parameters:
+  #     buildpack: nodejs_buildpack
+  #   requires:
+  #     - name: incidents-db
+
+  - name: incidents-app-deployer
+    type: com.sap.application.content
+    path: gen
+    requires:
+      - name: srv-api
+      - name: incidents-html5-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: app/
+      requires:
+        - name: incidentsincidents
+          artifacts:
+            - incidents.zip
+          target-path: app/
+    parameters:
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            existing_destinations_policy: update
+            destinations:
+              - Name: srv-api
+                URL: ~{srv-api/srv-url}
+                Authentication: NoAuthentication
+                Type: HTTP
+                ProxyType: Internet
+                HTML5.ForwardAuthToken: true
+                HTML5.DynamicDestination: true
+              - Name: ui5
+                URL: https://ui5.sap.com
+                Authentication: NoAuthentication
+                Type: HTTP
+                ProxyType: Internet
+
+  - name: incidentsincidents
+    type: html5
+    path: app/incidents
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm ci
+        - npm run build
+      supported-platforms:
+        []
+
+  - name: incidents-destinations
+    type: com.sap.application.content
+    requires:
+      - name: incidents-auth
+        parameters:
+          service-key:
+            name: incidents-auth-key
+      - name: incidents-html5-repo-host
+        parameters:
+          service-key:
+            name: incidents-html5-repo-host-key
+      - name: srv-api
+      - name: incidents-destination
+        parameters:
+          content-target: true
+    build-parameters:
+      no-source: true
+    parameters:
+      content:
+        instance:
+          existing_destinations_policy: update
+          destinations:
+            - Name: incidents-html5-repository
+              ServiceInstanceName: incidents-html5-repo-host
+              ServiceKeyName: incidents-html5-repo-host-key
+              sap.cloud.service: incidents.service
+            - Name: incidents-auth
+              Authentication: OAuth2UserTokenExchange
+              ServiceInstanceName: incidents-auth
+              ServiceKeyName: incidents-auth-key
+              sap.cloud.service: incidents.service
+
+resources:
+  - name: incidents-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: incidents-${org}-${space}
+        tenant-mode: dedicated
+        role-collections:
+          - name: 'admin (incidents ${org}-${space})'
+            description: 'generated'
+            role-template-references:
+              - '$XSAPPNAME.admin'
+  - name: incidents-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+      config:
+        database_id: '14f74390-a6b0-48b6-8630-110c23a6f2ac' #REPLACE with the Secondary HANA Cloud instance ID.
+        dr_setup:
+          op: pair
+          values:
+            - 'c7e171f8-0d6c-4efc-884a-c36dda3045dc' #REPLACE with primary HDI instance ID.
+
+  - name: incidents-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+  - name: incidents-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            existing_destinations_policy: update
+            destinations:
+              - Name: srv-api
+                URL: ~{srv-api/srv-url}
+                Authentication: NoAuthentication
+                Type: HTTP
+                ProxyType: Internet
+                HTML5.ForwardAuthToken: true
+                HTML5.DynamicDestination: true
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api # must be used in xs-app.json as well
+          url: ~{srv-url}
+          forwardAuthToken: true
+  - name: incidents-html5-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
