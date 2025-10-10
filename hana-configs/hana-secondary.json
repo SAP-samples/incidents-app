@@ -1,0 +1,19 @@
+{
+    "data": {
+        "memory": 32,
+        "systempassword": "Abcde12345",
+        "edition": "cloud",
+        "vcpu": 2,
+        "storage": 120,
+        "productVersion": {
+            "releaseCycle": "generally-available-quarterly",
+            "track": "2025.14"
+        }
+    },
+    "dr_setup": {
+        "op": "pair",
+        "values": [
+            "<REPLACE_WITH_PRIMARY_HANA_INSTANCE_ID>"
+        ]
+    }
+}

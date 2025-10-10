@@ -1,0 +1,6 @@
+{
+    "dr_setup": {
+        "op": "promote",
+        "values": ["forced"]
+    }
+}
