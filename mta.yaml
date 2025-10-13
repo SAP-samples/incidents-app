@@ -21,6 +21,21 @@ modules:
       - name: incident-management-destination-service
       - name: incident-management-connectivity
       - name: xp265-auto
+        parameters:
+          config:
+            instance_min_count: 2
+            instance_max_count: 5
+            scaling_rules:
+              - metric_type: throughput
+                breach_duration_secs: 60
+                threshold: 40
+                operator: ">="
+                adjustment: "+2"
+              - metric_type: throughput
+                breach_duration_secs: 300
+                threshold: 10
+                operator: ">="
+                adjustment: "-2"
       - name: cls-logging-drain
     provides:
       - name: srv-api
@@ -152,21 +167,6 @@ resources:
   # Auto Scaler instance
   - name: xp265-auto
     type: org.cloudfoundry.existing-service
-    parameters:
-      config:
-        instance_min_count: 2
-        instance_max_count: 5
-        scaling_rules:
-          - metric_type: throughput
-            breach_duration_secs: 60
-            threshold: 40
-            operator: ">="
-            adjustment: "+2"
-          - metric_type: throughput
-            breach_duration_secs: 300
-            threshold: 10
-            operator: "<="
-            adjustment: "-2"
   # Connectivity instance
   - name: incident-management-connectivity
     type: org.cloudfoundry.managed-service
