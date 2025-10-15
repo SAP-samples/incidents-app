@@ -19,8 +19,8 @@ modules:
       instances: 1
       buildpack: nodejs_buildpack
     properties:
-      SAP_CALM_FESR_LOG_LEVEL: debug
-      SAP_CALM_DCI_LOG_LEVEL: debug
+      SAP_CALM_FESR_LOG_LEVEL: info
+      SAP_CALM_DCI_LOG_LEVEL: info
       SAP_CALM_SERVICE_NAME: incident-feedback-srv
       SAP_CALM_SERVICE_TYPE: SAP_CP_CF
       SAP_CALM_DCI_AGG_THRESHOLD: 10
