@@ -6,7 +6,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@sap/cds": "^9.3.1",
+    "@sap/cds": "^9.4.3",
     "@cap-js/hana": "^2.2.0",
     "hdb": "^2.26.1",
     "@cap-js/telemetry": "git+https://github.com/cap-js/telemetry.git#SpanKind.SERVER",
