@@ -25,7 +25,7 @@ modules:
       SAP_CALM_SERVICE_TYPE: SAP_CP_CF
       SAP_CALM_DCI_AGG_THRESHOLD: 10
       OTEL_RESOURCE_ATTRIBUTES: sap.tenancy.tenant_id=52fbaf37-c604-4abf-8580-c97703835dc8
-      NODE_ARGS: -r @sap/xotel-agent-ext-js/dist/common/tracer
+      NODE_ARGS: -r @sap/xotel-agent-ext-js
     build-parameters:
       builder: npm-ci
     provides:
