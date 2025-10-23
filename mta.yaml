@@ -35,8 +35,7 @@ modules:
     requires:
       - name: incident-feedback-service-db
       - name: incident-management-xsuaa-service
-      # - name: xp265-cl
-      - name: cls-logging-drain
+      - name: xp265-cl
       - name: xp265-auto
       - name: incident-feedback-service-destination
 
@@ -138,9 +137,6 @@ resources:
       service-plan: hdi-shared
   - name: incident-management-xsuaa-service
     type: org.cloudfoundry.existing-service
-  # Cloud Logging instance      
-  - name: xp265-cl
-    type: org.cloudfoundry.existing-service
   # Auto Scaler instance
   - name: xp265-auto
     type: org.cloudfoundry.existing-service
@@ -180,7 +176,5 @@ resources:
     parameters:
       service: html5-apps-repo
       service-plan: app-runtime
-  - name: cls-logging-drain
+  - name: xp265-cl
     type: org.cloudfoundry.existing-service
-    parameters:
-      service-tags: ["cloud-logging", "Cloud Logging"]
