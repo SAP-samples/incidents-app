@@ -4,11 +4,7 @@
         "systempassword": "Abcde12345",
         "edition": "cloud",
         "vcpu": 2,
-        "storage": 120,
-        "productVersion": {
-            "releaseCycle": "generally-available-quarterly",
-            "track": "2025.14"
-        }
+        "storage": 120
     },
     "dr_setup": {
         "op": "pair",
