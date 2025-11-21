@@ -1,10 +1,8 @@
 {
     "data": {
-        "memory": 32,
-        "systempassword": "Abcde12345",
-        "edition": "cloud",
-        "vcpu": 2,
-        "storage": 120
+        "memory": 30,
+        "systempassword": "Abcd12345",
+        "edition": "cloud"
     },
     "dr_setup": {
         "op": "pair",
