@@ -41,7 +41,6 @@ modules:
     type: com.sap.application.content
     path: gen
     requires:
-      - name: srv-api
       - name: incidents-html5-repo-host
         parameters:
           content-target: true
@@ -52,25 +51,6 @@ modules:
           artifacts:
             - incidents.zip
           target-path: app/
-    parameters:
-      config:
-        HTML5Runtime_enabled: true
-        init_data:
-          instance:
-            existing_destinations_policy: update
-            destinations:
-              - Name: srv-api
-                URL: ~{srv-api/srv-url}
-                Authentication: NoAuthentication
-                Type: HTTP
-                ProxyType: Internet
-                HTML5.ForwardAuthToken: true
-                HTML5.DynamicDestination: true
-              - Name: ui5
-                URL: https://ui5.sap.com
-                Authentication: NoAuthentication
-                Type: HTTP
-                ProxyType: Internet
 
   - name: incidentsincidents
     type: html5
