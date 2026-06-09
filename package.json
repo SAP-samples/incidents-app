@@ -68,6 +68,7 @@
           "model": "srv/external/OP_API_BUSINESS_PARTNER_SRV"
         },
         "[production]": {
+          "model": "srv/external/OP_API_BUSINESS_PARTNER_SRV",
           "credentials": {
             "destination": "incidents-api-access",
             "path": "/sap/opu/odata/sap/API_BUSINESS_PARTNER"
