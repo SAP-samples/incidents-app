@@ -28,7 +28,7 @@ modules:
             scaling_rules:
               - metric_type: throughput
                 breach_duration_secs: 60
-                threshold: 40
+                threshold: 20
                 operator: ">="
                 adjustment: "+2"
               - metric_type: throughput
