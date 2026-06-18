@@ -4,6 +4,11 @@ class ProcessorService extends cds.ApplicationService {
   /** Registering custom event handlers */
   async init() {
     logger.info("Initialize processors endpoint!");
+    try {
+      this.S4bupa = await cds.connect.to('OP_API_BUSINESS_PARTNER_SRV');
+    } catch (err) {
+      logger.warn('Failed to connect to Business Partner service during initialization:', err.message);
+    }
     this.S4bupa = await cds.connect.to('OP_API_BUSINESS_PARTNER_SRV');
     this.remoteService = await cds.connect.to('RemoteService');
 
@@ -27,7 +32,7 @@ class ProcessorService extends cds.ApplicationService {
     const result = await next();
 
     if (!this.S4bupa) {
-      logger.warn('Business Partner service unavailable - skipping customer cache');
+      logger.warn('Business Partner service unavailable during customer cache operation');
       return result;
     }
 
