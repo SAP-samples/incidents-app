@@ -3,19 +3,20 @@ const logger = require('cf-nodejs-logging-support');
 class ProcessorService extends cds.ApplicationService {
   /** Registering custom event handlers */
   async init() {
-     logger.info("Initialize processors endpoint!");
-
+    logger.info("Initialize processors endpoint!");
+    this.S4bupa = await cds.connect.to('OP_API_BUSINESS_PARTNER_SRV');
+    this.remoteService = await cds.connect.to('RemoteService');
     this.before("UPDATE", "Incidents", (req) => this.onUpdate(req));
     this.before("CREATE", "Incidents", (req) => this.changeUrgencyDueToSubject(req.data));
     this.on('READ', 'Customers', (req) => this.onCustomerRead(req));
     this.on(['CREATE','UPDATE'], 'Incidents', (req, next) => this.onCustomerCache(req, next));
-    try {
-      this.S4bupa = await cds.connect.to('OP_API_BUSINESS_PARTNER_SRV');
-    } catch (err) {
-      logger.error('Failed to connect to Business Partner service:', err.message);
-      this.S4bupa = null; // Service will be unavailable
-    }
-    this.remoteService = await cds.connect.to('RemoteService');
+    //try {
+    
+    // } catch (err) {
+    //   logger.error('Failed to connect to Business Partner service:', err.message);
+    //   this.S4bupa = null; // Service will be unavailable
+    // }
+    
     return super.init();
   }
 
@@ -25,9 +26,9 @@ class ProcessorService extends cds.ApplicationService {
   const result = await next();
 
   if (!this.S4bupa) {
-    logger.warn('Business Partner service unavailable - skipping customer cache');
-    return result;
-  }
+  logger.warn('Business Partner service unavailable - skipping customer cache');
+  return result;
+   }
 
   const { BusinessPartner } = this.remoteService.entities;
   if (newCustomerId && newCustomerId !== "") {
@@ -59,10 +60,10 @@ class ProcessorService extends cds.ApplicationService {
 }
     
 async onCustomerRead(req) {
-      if (!this.S4bupa) {
-        logger.warn('Business Partner service unavailable - cannot read customers');
-        return req.reject(503, 'Business Partner service temporarily unavailable');
-      }
+      // if (!this.S4bupa) {
+      //   logger.warn('Business Partner service unavailable - cannot read customers');
+      //   return req.reject(503, 'Business Partner service temporarily unavailable');
+      // }
 
       console.log('>> delegating to S4 service...', req.query);
       let { limit, one } = req.query.SELECT
