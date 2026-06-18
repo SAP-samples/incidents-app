@@ -9,7 +9,7 @@ class ProcessorService extends cds.ApplicationService {
     } catch (err) {
       logger.warn('Failed to connect to Business Partner service during initialization:', err.message);
     }
-    this.S4bupa = await cds.connect.to('OP_API_BUSINESS_PARTNER_SRV');
+    //this.S4bupa = await cds.connect.to('OP_API_BUSINESS_PARTNER_SRV');
     this.remoteService = await cds.connect.to('RemoteService');
 
     this.before("UPDATE", "Incidents", (req) => this.onUpdate(req));
@@ -32,10 +32,14 @@ class ProcessorService extends cds.ApplicationService {
     const result = await next();
 
     if (!this.S4bupa) {
+      this.S4bupa = await cds.connect.to('OP_API_BUSINESS_PARTNER_SRV');
       logger.warn('Business Partner service unavailable during customer cache operation');
+
+    }
+    if (!this.S4bupa) {
+      logger.warn('Business Partner service still unavailable after retrying connection - cannot cache customer data');
       return result;
     }
-
     const { BusinessPartner } = this.remoteService.entities;
     if (newCustomerId && newCustomerId !== "") {
       console.log('>> CREATE or UPDATE customer!');
@@ -70,8 +74,18 @@ class ProcessorService extends cds.ApplicationService {
       logger.warn('Business Partner service unavailable - cannot read customers');
       //return req.reject(503, 'Business Partner service temporarily unavailable');
     }
+    if (!this.S4bupa) {
+      this.S4bupa = await cds.connect.to('OP_API_BUSINESS_PARTNER_SRV');
+      logger.warn('Business Partner service unavailable during customer read operation');
+
+    }
+    if (!this.S4bupa) {
+      logger.warn('Business Partner service still unavailable after retrying connection - cannot read customer data');
+      ;
+    }
 
     console.log('>> delegating to S4 service...', req.query);
+    logger.info('Delegating customer read to Business Partner service with query:', req.query);
     let { limit, one } = req.query.SELECT
     if (!limit) limit = { rows: { val: 55 }, offset: { val: 0 } } //default limit to 55 rows
 
